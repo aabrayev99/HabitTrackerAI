@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Модель пользователя
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  hashedPassword String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Связи
+  habits        Habit[]
+  habitEntries  HabitEntry[]
+  conversations AiConversation[]
+  accounts      Account[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+// Модели для NextAuth
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Модель привычки
+model Habit {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  frequency   String   @default("daily") // daily, weekly, custom
+  startDate   DateTime @default(now())
+  tags        String[] @default([])
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Связи
+  userId  String
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries HabitEntry[]
+
+  @@map("habits")
+}
+
+// Модель записи выполнения привычки
+model HabitEntry {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  completed Boolean  @default(false)
+  notes     String?
+  createdAt DateTime @default(now())
+
+  // Связи
+  habitId String
+  userId  String
+  habit   Habit  @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Уникальность: одна запись на привычку на день для пользователя
+  @@unique([habitId, userId, date])
+  @@map("habit_entries")
+}
+
+// Модель разговоров с ИИ
+model AiConversation {
+  id        String   @id @default(cuid())
+  messages  Json     @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_conversations")
+}
