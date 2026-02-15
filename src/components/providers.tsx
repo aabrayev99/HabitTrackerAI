@@ -1,7 +1,6 @@
 'use client'
 
 import { SessionProvider } from 'next-auth/react'
-import { HeroUIProvider } from '@heroui/react'
 import { ReactNode } from 'react'
 
 interface ProvidersProps {
@@ -11,7 +10,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
-      <HeroUIProvider>{children}</HeroUIProvider>
+      {children}
     </SessionProvider>
   )
 }

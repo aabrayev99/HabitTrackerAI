@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google"; // Modern sans-serif
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin", "cyrillic"],
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "Трекер Привычек - Отслеживай свой прогресс с ИИ-помощником",
-  description: "Веб-приложение для отслеживания привычек с встроенным ИИ-консультантом, который помогает мотивировать и давать советы.",
+  title: "Motivation Quoest - Build Your Habits",
+  description: "Experience the next level of habit tracking and motivation.",
 };
 
 export default function RootLayout({
@@ -18,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
-      <body className={`${inter.className} antialiased min-h-screen bg-background text-foreground`}>
+    <html lang="en" data-theme="cosmic" className={jakarta.variable}>
+      <body className="antialiased min-h-screen">
         <Providers>
           {children}
         </Providers>
