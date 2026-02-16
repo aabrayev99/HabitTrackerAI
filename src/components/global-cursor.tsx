@@ -1,9 +1,16 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export function GlobalCursor() {
     const cursorRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    // Wait for client mount before creating portal
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         const cursor = cursorRef.current;
@@ -14,6 +21,7 @@ export function GlobalCursor() {
         for (let i = 0; i < 10; i++) {
             const trail = document.createElement('div');
             trail.className = 'cursor-trail';
+            trail.style.zIndex = '2147483646';
             document.body.appendChild(trail);
             trailPool.push(trail);
         }
@@ -56,13 +64,29 @@ export function GlobalCursor() {
         const observer = new MutationObserver(attachHoverListeners);
         observer.observe(document.body, { childList: true, subtree: true });
 
+        // Keep cursor element at the very end of <body> so it's always on top
+        const keepOnTop = () => {
+            if (cursor.parentNode && cursor !== cursor.parentNode.lastChild) {
+                cursor.parentNode.appendChild(cursor);
+            }
+        };
+        const topObserver = new MutationObserver(keepOnTop);
+        topObserver.observe(document.body, { childList: true });
+
         return () => {
             document.removeEventListener('mousemove', moveCursor);
             document.removeEventListener('mousedown', addClick);
             observer.disconnect();
+            topObserver.disconnect();
             trailPool.forEach(t => t.remove());
         };
-    }, []);
+    }, [mounted]);
 
-    return <div ref={cursorRef} className="custom-cursor" style={{ zIndex: 9999 }} />;
+    if (!mounted) return null;
+
+    // Render via portal directly into document.body — bypasses any React tree z-index stacking
+    return createPortal(
+        <div ref={cursorRef} className="custom-cursor" />,
+        document.body
+    );
 }

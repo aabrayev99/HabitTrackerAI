@@ -16,11 +16,48 @@ body {
   cursor: none;
 }
 
-/* Force custom cursor everywhere — no system cursor fallback */
+/* Hide system cursor everywhere */
 *,
 *::before,
 *::after {
   cursor: none !important;
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+/* Hide scrollbar by default, show on hover */
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0);
+  border-radius: 100px;
+  transition: background 0.3s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.6);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover {
+  scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
 }
 
 /* ============================================
@@ -33,7 +70,7 @@ body {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(168, 85, 247, 1) 0%, rgba(168, 85, 247, 0) 70%);
   pointer-events: none;
-  z-index: 9999;
+  z-index: 2147483647;
   transform: translate(-50%, -50%);
   transition: width 0.2s, height 0.2s, background 0.2s;
   mix-blend-mode: screen;

@@ -1,8 +1,8 @@
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { HabitList } from '@/components/habits/habit-list'
 import { QuickStats } from '@/components/dashboard/quick-stats'
@@ -10,15 +10,15 @@ import { AddHabitButton } from '@/components/habits/add-habit-button'
 import {
   LayoutDashboard, CalendarDays, Target, Bot, Settings, Bell, Search,
   Droplets, Activity, Lightbulb, X, ChevronLeft, ChevronRight,
-  Check, Minus, Filter, Plus, Pencil, Trash2, Save, User, Mail, Shield, LogOut, Flame, CheckCircle2, Calendar
+  Check, Minus, Filter, Plus, Pencil, Trash2, Save, User, Mail, Shield, LogOut, Flame, CheckCircle2, Calendar, Camera
 } from 'lucide-react'
 
 // =============================================
-// SIDEBAR
+// SIDEBAR — fixed, no scroll on its own body
 // =============================================
 const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string; setActiveTab: (t: string) => void }) => (
-  <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#050505] border-r border-white/5 hidden lg:flex flex-col z-40 transition-all duration-500">
-    <div className="h-20 flex items-center px-6 border-b border-white/5">
+  <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#050505] border-r border-white/5 hidden lg:flex flex-col z-40">
+    <div className="h-20 flex items-center px-6 border-b border-white/5 shrink-0">
       <Link href="/" className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(168,85,247,0.4)] text-xl">Q</div>
         <span className="text-xl font-bold tracking-tighter">
@@ -52,7 +52,7 @@ const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string; setActiveTab:
       </button>
     </nav>
 
-    <div className="p-5 border-t border-white/5">
+    <div className="p-5 border-t border-white/5 shrink-0">
       <div className="rounded-2xl bg-[#0a0a0a] p-5 border border-white/10 relative overflow-hidden group">
         <label className="text-[10px] font-bold text-purple-400 uppercase tracking-widest block mb-1">Q-Habit Pro</label>
         <h4 className="font-bold text-white text-sm mb-3">Премиум доступ</h4>
@@ -64,52 +64,58 @@ const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string; setActiveTab:
 );
 
 // =============================================
-// HEADER
+// HEADER — linear layout, no dropdown
 // =============================================
 const Header = ({ user, signOut: doSignOut, activeTab, setActiveTab }: any) => {
   const tabNames: Record<string, string> = { dashboard: 'Главная', calendar: 'Календарь', goals: 'Мои Цели', profile: 'Личный кабинет' }
   return (
-    <header className="fixed lg:left-64 top-0 right-0 h-20 bg-[#030014]/80 backdrop-blur-[20px] border-b border-white/5 flex items-center justify-between px-8 z-30 transition-all duration-500">
-      <div className="text-sm text-gray-400 hidden md:flex items-center gap-3 font-medium">
-        <Link href="/" className="hover:text-white transition-all transform hover:scale-105">Главная</Link>
+    <header className="fixed lg:left-64 top-0 right-0 h-20 bg-[#030014]/80 backdrop-blur-[20px] border-b border-white/5 flex items-center px-8 z-30">
+
+      {/* Left: Breadcrumb */}
+      <div className="text-sm text-gray-400 hidden md:flex items-center gap-3 font-medium shrink-0 mr-auto">
+        <Link href="/" className="hover:text-white transition-all">Главная</Link>
         <span className="text-gray-700">/</span>
-        <button onClick={() => setActiveTab('dashboard')} className="hover:text-white transition-all transform hover:scale-105">Дашборд</button>
+        <button onClick={() => setActiveTab('dashboard')} className="hover:text-white transition-all">Дашборд</button>
         <span className="text-gray-700">/</span>
         <span className="text-white font-bold tracking-tight">{tabNames[activeTab] || 'Дашборд'}</span>
       </div>
 
-      <div className="flex items-center gap-6 ml-auto">
-        <div className="relative hidden sm:block group">
-          <input type="text" placeholder="Поиск инструментов..." className="auth-input bg-white/5 border-white/10 rounded-2xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50 w-64 transition-all duration-500" />
+      {/* Right: fixed group that never overlaps search */}
+      <div className="flex items-center gap-4 shrink-0 ml-auto">
+        {/* Search */}
+        <div className="relative hidden xl:block group">
+          <input type="text" placeholder="Поиск..." className="auth-input bg-white/5 border-white/10 rounded-2xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50 w-48 transition-all duration-500" />
           <span className="absolute left-3.5 top-3 text-gray-500 group-focus-within:text-purple-400 transition-colors"><Search className="w-4 h-4" strokeWidth={2} /></span>
         </div>
 
+        {/* Bell */}
         <button className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all duration-300">
           <Bell className="w-5 h-5" strokeWidth={1.5} />
           <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-purple-500 rounded-full border-2 border-[#030014] animate-pulse"></span>
         </button>
 
-        <div className="flex items-center gap-4 pl-6 border-l border-white/10">
-          <div className="text-right hidden md:block group cursor-pointer" onClick={() => setActiveTab('profile')}>
-            <div className="text-sm font-bold text-white tracking-wide group-hover:text-purple-400 transition-colors">{user?.name}</div>
-            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Free Account</div>
-          </div>
-          <div className="dropdown dropdown-end">
-            <div tabIndex={0} role="button" className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-blue-500 p-[1.5px] hover:rotate-3 transition-transform duration-300 shadow-lg shadow-purple-500/20">
-              <div className="w-full h-full rounded-2xl bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
-                {user?.image ? <img src={user.image} alt="User" className="w-full h-full object-cover" /> : <span className="text-sm font-black text-white">{user?.name?.[0]}</span>}
-              </div>
-            </div>
-            <ul tabIndex={0} className="dropdown-content z-[2] menu p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-[#0a0a0a]/95 backdrop-blur-xl border border-white/10 rounded-2xl w-56 mt-4 animate-in fade-in zoom-in duration-200">
-              <div className="px-4 py-3 border-b border-white/5 mb-2">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Аккаунт</p>
-                <p className="text-xs text-white mt-1 truncate">{user?.email}</p>
-              </div>
-              <li><button onClick={() => setActiveTab('profile')} className="text-xs font-semibold py-2.5 hover:bg-white/5 text-gray-300 rounded-xl flex gap-2"><User className="w-4 h-4" /> Мой профиль</button></li>
-              <li><button onClick={() => doSignOut()} className="text-xs font-semibold py-2.5 hover:bg-red-500/10 text-red-500 rounded-xl flex gap-2"><LogOut className="w-4 h-4" /> Выйти</button></li>
-            </ul>
+        {/* Divider */}
+        <div className="w-px h-8 bg-white/10"></div>
+
+        {/* Avatar */}
+        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-blue-500 p-[1.5px] shadow-lg shadow-purple-500/20 shrink-0">
+          <div className="w-full h-full rounded-2xl bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
+            {user?.image ? <img src={user.image} alt="User" className="w-full h-full object-cover" /> : <span className="text-xs font-black text-white">{user?.name?.[0]}</span>}
           </div>
         </div>
+
+        {/* Name */}
+        <span className="hidden sm:block text-sm font-bold text-white tracking-wide whitespace-nowrap">{user?.name}</span>
+
+        {/* Profile link */}
+        <button onClick={() => setActiveTab('profile')} className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-purple-400 transition-colors whitespace-nowrap">
+          <User className="w-3.5 h-3.5" /> Профиль
+        </button>
+
+        {/* Logout */}
+        <button onClick={() => doSignOut()} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-400/60 hover:text-red-400 hover:bg-red-500/5 transition-all whitespace-nowrap">
+          <LogOut className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Выйти</span>
+        </button>
       </div>
     </header>
   )
@@ -125,7 +131,7 @@ function CalendarView({ habits }: { habits: any[] }) {
   const month = currentMonth.getMonth()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const firstDayOfWeek = new Date(year, month, 1).getDay()
-  const startOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1 // Mon start
+  const startOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1
 
   const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
   const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -149,7 +155,7 @@ function CalendarView({ habits }: { habits: any[] }) {
 
   return (
     <div className="rounded-[32px] border border-white/5 bg-[#0a0a0a]/50 backdrop-blur-sm p-8 animate-[auth-entrance_0.5s_ease-out_both]">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h2 className="text-3xl font-bold bg-gradient-to-b from-white to-gray-500 text-transparent bg-clip-text tracking-tighter" style={{ letterSpacing: '-0.04em' }}>{monthNames[month]} {year}</h2>
           <p className="text-sm text-gray-500 font-medium tracking-wide mt-1 uppercase">Рекорд активности — {habits.length > 0 ? '92%' : '0%'}</p>
@@ -239,7 +245,7 @@ function GoalsView({ habits, onHabitUpdated }: { habits: any[]; onHabitUpdated: 
           <div key={habit.id} className="relative group rounded-[32px] border border-white/5 bg-[#0a0a0a]/40 p-8 hover:border-white/20 transition-all duration-500 hover:scale-[1.02] overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
               <div className="flex items-center gap-4">
                 <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center p-[2px] border ${habit.status === 'active' ? 'border-green-500/50' : 'border-gray-500/50'}`}>
                   <div className={`w-full h-full rounded-full ${habit.status === 'active' ? 'bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,1)]' : habit.status === 'completed' ? 'bg-purple-500' : 'bg-gray-600'}`}></div>
@@ -269,7 +275,7 @@ function GoalsView({ habits, onHabitUpdated }: { habits: any[]; onHabitUpdated: 
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-tighter border-t border-white/5 pt-5">
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-tighter border-t border-white/5 pt-5 flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-orange-400">
                   <Flame className="w-4 h-4" /> {habit.currentStreak} дн. СТРИК
                 </div>
@@ -292,7 +298,7 @@ function EditableHabitList({ habits, onHabitUpdated }: { habits: any[]; onHabitU
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDesc, setEditDesc] = useState('')
-  const [editEndDate, setEditEndDate] = useState('') // New state for deadline
+  const [editEndDate, setEditEndDate] = useState('')
   const [loadingHabits, setLoadingHabits] = useState<Set<string>>(new Set())
 
   const today = new Date().toISOString().split('T')[0]
@@ -301,7 +307,7 @@ function EditableHabitList({ habits, onHabitUpdated }: { habits: any[]; onHabitU
     setEditingId(habit.id)
     setEditTitle(habit.title)
     setEditDesc(habit.description || '')
-    setEditEndDate(habit.endDate ? new Date(habit.endDate).toISOString().split('T')[0] : '') // YYYY-MM-DD
+    setEditEndDate(habit.endDate ? new Date(habit.endDate).toISOString().split('T')[0] : '')
   }
 
   const saveEdit = async (habitId: string) => {
@@ -346,7 +352,6 @@ function EditableHabitList({ habits, onHabitUpdated }: { habits: any[]; onHabitU
         const isLoading = loadingHabits.has(habit.id)
         const isEditing = editingId === habit.id
 
-        // Display Deadline
         const deadlineDate = habit.endDate ? new Date(habit.endDate) : null
         const isOverdue = deadlineDate && deadlineDate < new Date() && !isCompleted
 
@@ -367,14 +372,14 @@ function EditableHabitList({ habits, onHabitUpdated }: { habits: any[]; onHabitU
               {isEditing ? (
                 <div className="space-y-3 p-1">
                   <input value={editTitle} onChange={e => setEditTitle(e.target.value)} autoFocus className="auth-input w-full h-11 bg-black/40 border-white/10 rounded-xl px-4 text-sm font-bold text-white outline-none focus:border-purple-500/50 shadow-inner" placeholder="Название..." />
-                  <div className="flex gap-2">
-                    <input value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="Описание..." className="auth-input flex-1 h-10 bg-black/20 border-white/5 rounded-xl px-4 text-xs text-gray-300 outline-none focus:border-purple-500/30 shadow-inner" />
+                  <div className="flex gap-2 flex-wrap">
+                    <input value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="Описание..." className="auth-input flex-1 min-w-[120px] h-10 bg-black/20 border-white/5 rounded-xl px-4 text-xs text-gray-300 outline-none focus:border-purple-500/30 shadow-inner" />
                     <input type="date" value={editEndDate} onChange={e => setEditEndDate(e.target.value)} className="auth-input w-36 h-10 bg-black/20 border-white/5 rounded-xl px-3 text-xs text-white outline-none focus:border-purple-500/30 shadow-inner [color-scheme:dark]" />
                   </div>
                 </div>
               ) : (
                 <div className="transition-all duration-500">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <div className={`text-base font-black tracking-tight text-white transition-all ${isCompleted ? 'opacity-30 line-through' : ''}`}>{habit.title}</div>
                     {deadlineDate && (
                       <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg border ${isOverdue ? 'text-red-400 border-red-500/20 bg-red-500/5' : 'text-gray-500 border-white/5 bg-white/5'}`}>
@@ -413,22 +418,49 @@ function EditableHabitList({ habits, onHabitUpdated }: { habits: any[]; onHabitU
 }
 
 // =============================================
-// MAIN DASHBOARD PAGE
+// MAIN DASHBOARD PAGE (Suspense wrapper)
 // =============================================
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-2 border-purple-500 border-t-transparent rounded-2xl animate-spin mb-4 shadow-[0_0_20px_rgba(168,85,247,0.3)]"></div>
+        <p className="text-[10px] font-bold text-purple-400 uppercase tracking-[0.3em] animate-pulse">Загрузка протокола...</p>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
+  )
+}
+
+function DashboardContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [habits, setHabits] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('dashboard')
+  const [userImage, setUserImage] = useState<string | null>(null)
 
-  // ... (useEffects and fetchHabits same as before)
+  // Persist active tab in URL ?tab=... so it survives page refresh
+  const validTabs = ['dashboard', 'calendar', 'goals', 'profile']
+  const tabFromUrl = searchParams.get('tab') || 'dashboard'
+  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl : 'dashboard'
+
+  const setActiveTab = useCallback((tab: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('tab', tab)
+    router.replace(`/dashboard?${params.toString()}`, { scroll: false })
+  }, [searchParams, router])
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/signin')
   }, [status, router])
 
   useEffect(() => {
-    if (session?.user) fetchHabits()
+    if (session?.user) {
+      fetchHabits()
+      fetchUserProfile()
+    }
   }, [session])
 
   const fetchHabits = async () => {
@@ -437,6 +469,17 @@ export default function DashboardPage() {
       if (response.ok) { const data = await response.json(); setHabits(data) }
     } catch (error) { console.error('Error fetching habits:', error) }
     finally { setLoading(false) }
+  }
+
+  // Fetch avatar from DB separately — never touches the JWT cookie
+  const fetchUserProfile = async () => {
+    try {
+      const res = await fetch('/api/user/profile')
+      if (res.ok) {
+        const data = await res.json()
+        setUserImage(data.image || null)
+      }
+    } catch (error) { console.error('Error fetching profile:', error) }
   }
 
   if (status === 'loading' || loading) {
@@ -457,9 +500,12 @@ export default function DashboardPage() {
     profile: { title: 'Личный кабинет', subtitle: 'Управление идентификатором и настройками безопасности.' }
   }
 
+  // Merge session user with separately fetched image
+  const userWithImage = { ...session.user, image: userImage }
+
   return (
-    <div className="min-h-screen bg-[#020108] text-white font-sans selection:bg-purple-500/30 selection:text-white overflow-hidden">
-      {/* Background Blobs */}
+    <div className="h-screen bg-[#020108] text-white font-sans selection:bg-purple-500/30 selection:text-white overflow-hidden flex flex-col">
+      {/* Background Blobs — fixed, purely decorative */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[25%] w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-[160px] animate-[auth-blob-1_25s_infinite]"></div>
         <div className="absolute bottom-[0%] right-[5%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[140px] animate-[auth-blob-2_30s_infinite]"></div>
@@ -467,10 +513,11 @@ export default function DashboardPage() {
       </div>
 
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <Header user={session.user} signOut={signOut} activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Header user={userWithImage} signOut={signOut} activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <main className="lg:pl-64 pt-24 p-8 min-h-screen relative z-10 transition-all duration-500">
-        {/* Page Title & Actions Separated */}
+      {/* Main scrollable area — ONLY this scrolls */}
+      <main className="lg:ml-64 mt-20 flex-1 overflow-y-auto relative z-10 p-8">
+        {/* Page Title & Actions */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-16 gap-8 animate-[auth-entrance_0.4s_ease-out_both] delay-75">
           <div className="relative max-w-2xl">
             <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-b from-white via-white to-gray-500 text-transparent bg-clip-text tracking-tighter inline-block relative pr-8 leading-tight" style={{ letterSpacing: '-0.04em' }}>
@@ -483,8 +530,7 @@ export default function DashboardPage() {
           </div>
 
           {activeTab === 'dashboard' && (
-            <div className="flex gap-4 self-end xl:self-auto">
-              {/* Archive button removed as per request */}
+            <div className="flex gap-4 self-end xl:self-auto shrink-0">
               <AddHabitButton onHabitAdded={fetchHabits} />
             </div>
           )}
@@ -510,12 +556,11 @@ export default function DashboardPage() {
 
               {/* Widgets Column */}
               <div className="space-y-8">
-                {/* Stats Widget */}
                 <div className="rounded-[40px] border border-white/5 bg-gradient-to-br from-[#0f0f0f] via-[#0a0a0a] to-[#050505] p-10 relative overflow-hidden shadow-2xl border-t border-t-white/10">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-purple-600/10 rounded-full blur-[60px]"></div>
                   <div className="relative z-10">
                     <h3 className="text-xs font-black text-purple-400 uppercase tracking-[0.3em] mb-6">Продуктивность</h3>
-                    <div className="flex items-end gap-3 mb-4">
+                    <div className="flex items-end gap-3 mb-4 flex-wrap">
                       <div className="text-6xl font-black text-white tracking-tighter">84<span className="text-2xl text-purple-500">%</span></div>
                       <div className="text-sm text-green-400 font-black mb-3 underline decoration-double decoration-green-900">+2.4</div>
                     </div>
@@ -526,16 +571,15 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Notifications Widget */}
                 <div className="rounded-[40px] border border-white/5 bg-[#0a0a0a]/40 p-8">
                   <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-6 px-2">Сигналы</h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/5 transition-all cursor-pointer group">
-                      <div className="w-12 h-12 rounded-[18px] bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg active:scale-95"><Droplets className="w-6 h-6" strokeWidth={1.5} /></div>
+                      <div className="w-12 h-12 rounded-[18px] bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg active:scale-95 shrink-0"><Droplets className="w-6 h-6" strokeWidth={1.5} /></div>
                       <div><div className="text-base font-black text-white group-hover:text-blue-300 transition-colors tracking-tight">Гидратация</div><div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">14:00 • 500мл</div></div>
                     </div>
                     <div className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/5 transition-all cursor-pointer group">
-                      <div className="w-12 h-12 rounded-[18px] bg-pink-500/10 text-pink-400 flex items-center justify-center group-hover:bg-pink-500 group-hover:text-white transition-all shadow-lg active:scale-95"><Activity className="w-6 h-6" strokeWidth={1.5} /></div>
+                      <div className="w-12 h-12 rounded-[18px] bg-pink-500/10 text-pink-400 flex items-center justify-center group-hover:bg-pink-500 group-hover:text-white transition-all shadow-lg active:scale-95 shrink-0"><Activity className="w-6 h-6" strokeWidth={1.5} /></div>
                       <div><div className="text-base font-black text-white group-hover:text-pink-300 transition-colors tracking-tight">Активность</div><div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">18:30 • Ср, Пт</div></div>
                     </div>
                   </div>
@@ -551,73 +595,158 @@ export default function DashboardPage() {
         {/* TAB: Goals */}
         {activeTab === 'goals' && <GoalsView habits={habits} onHabitUpdated={fetchHabits} />}
 
-        {/* TAB: Profile (Reusing ProfileView logic from previous step, assuming imported or defined) */}
-        {activeTab === 'profile' && <ProfileView user={session.user} />}
-
+        {/* TAB: Profile */}
+        {activeTab === 'profile' && <ProfileView user={userWithImage} habits={habits} onImageUploaded={fetchUserProfile} />}
       </main>
     </div>
   )
 }
 
-function ProfileView({ user }: { user: any }) {
-  // ... (Full implementation of ProfileView again)
+// =============================================
+// PROFILE VIEW
+// =============================================
+function ProfileView({ user, habits, onImageUploaded }: { user: any, habits: any[], onImageUploaded: () => void }) {
+  const [isUploading, setIsUploading] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+
+  const totalGoals = habits.length
+  const maxStreak = habits.reduce((max: number, h: any) => Math.max(max, h.currentStreak || 0), 0)
+
+  const avgRate = habits.length > 0
+    ? habits.reduce((sum: number, h: any) => sum + (h.completionRate || 0), 0) / habits.length
+    : 0
+
+  let rating = 'C'
+  let ratingColor = 'text-gray-400'
+  if (avgRate >= 95) { rating = 'S+'; ratingColor = 'text-purple-400' }
+  else if (avgRate >= 80) { rating = 'A'; ratingColor = 'text-green-400' }
+  else if (avgRate >= 60) { rating = 'B'; ratingColor = 'text-blue-400' }
+
+  // Display: preview (optimistic) > user.image (from DB) > fallback
+  const displayImage = previewImage || user?.image
+
+  const handleImageUpload = async (e: any) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    if (file.size > 1024 * 1024) {
+      alert("Изображение слишком большое (макс 1Мб)")
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string
+      try {
+        setIsUploading(true)
+        // Optimistic preview
+        setPreviewImage(base64)
+
+        // Save to DB
+        const res = await fetch('/api/user/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64 })
+        })
+
+        if (!res.ok) {
+          setPreviewImage(null)
+          throw new Error('Failed to update')
+        }
+
+        // Refresh profile data in parent
+        onImageUploaded()
+
+      } catch (err) {
+        console.error(err)
+        alert("Ошибка загрузки")
+      }
+      finally { setIsUploading(false) }
+    }
+    reader.readAsDataURL(file)
+  }
+
   return (
-    <div className="max-w-4xl animate-[auth-entrance_0.5s_ease-out_both]">
+    <div className="max-w-4xl animate-[auth-entrance_0.5s_ease-out_both] pb-10">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <div className="rounded-[40px] border border-white/5 bg-[#0a0a0a]/40 p-10 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/5 rounded-full blur-[80px] group-hover:bg-purple-500/10 transition-all duration-700"></div>
-            <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-              <div className="w-32 h-32 rounded-[32px] bg-gradient-to-tr from-purple-500 to-blue-500 p-[2px] shadow-2xl shadow-purple-500/20">
-                <div className="w-full h-full rounded-[30px] bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
-                  {user?.image ? (
-                    <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-4xl font-black text-white">{user?.name?.[0]}</span>
-                  )}
+
+            <div className="flex flex-col md:flex-row items-center gap-10 relative z-10 flex-wrap">
+              {/* Avatar Upload */}
+              <div className="relative group/avatar cursor-pointer shrink-0">
+                <div className="w-32 h-32 rounded-[32px] bg-gradient-to-tr from-purple-500 to-blue-500 p-[2px] shadow-2xl shadow-purple-500/20">
+                  <div className="w-full h-full rounded-[30px] bg-[#0a0a0a] flex items-center justify-center overflow-hidden relative">
+                    {displayImage ? (
+                      <img src={displayImage} alt="Avatar" className="w-full h-full object-cover transition-transform group-hover/avatar:scale-105" />
+                    ) : (
+                      <span className="text-4xl font-black text-white">{user?.name?.[0]}</span>
+                    )}
+
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[4px] opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1">
+                      <Camera className="w-8 h-8 text-white" strokeWidth={1.5} />
+                      <span className="text-[10px] uppercase font-bold text-white/80">Загрузить</span>
+                    </div>
+
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      </div>
+                    )}
+                  </div>
                 </div>
+                <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
               </div>
-              <div className="text-center md:text-left">
+
+              <div className="text-center md:text-left min-w-0">
                 <h2 className="text-4xl font-black bg-gradient-to-b from-white to-gray-500 text-transparent bg-clip-text tracking-tighter" style={{ letterSpacing: '-0.04em' }}>{user?.name}</h2>
-                <div className="flex items-center gap-2 mt-3 text-gray-500 font-bold uppercase text-xs tracking-widest justify-center md:justify-start">
-                  <Mail className="w-3.5 h-3.5 text-purple-500" /> {user?.email}
+                <div className="flex items-center gap-2 mt-3 text-gray-500 font-bold uppercase text-xs tracking-widest justify-center md:justify-start flex-wrap">
+                  <Mail className="w-3.5 h-3.5 text-purple-500 shrink-0" /> <span className="truncate">{user?.email}</span>
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2 justify-center md:justify-start">
                   <span className="px-4 py-1.5 rounded-2xl bg-purple-600/10 text-purple-400 border border-purple-500/20 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-purple-500/5">
-                    <Shield className="w-3 h-3" /> Уровень 1
+                    <Shield className="w-3 h-3" /> Уровень {Math.floor(totalGoals / 5) + 1}
                   </span>
                   <span className="px-4 py-1.5 rounded-2xl bg-blue-600/10 text-blue-400 border border-blue-500/20 text-[10px] font-black uppercase tracking-widest">Standard Plan</span>
                 </div>
               </div>
             </div>
-            {/* Stats removed from here to reduce clutter if needed, but keeping generally */}
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-white/5">
+
+            {/* Dynamic Glassmorphism Stats — flex-wrap */}
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 pt-10 border-t border-white/5">
               {[
-                { label: 'Всего Целей', val: '12', color: 'text-purple-400' },
-                { label: 'Стрик', val: '8', color: 'text-orange-400' },
-                { label: 'Минут в чате', val: '142', color: 'text-blue-400' },
-                { label: 'Рейтинг', val: 'S+', color: 'text-green-400' },
+                { label: 'Всего Целей', val: totalGoals, color: 'text-purple-400', icon: Target },
+                { label: 'Лучший Стрик', val: maxStreak, color: 'text-orange-400', icon: Flame },
+                { label: 'Чат (мин)', val: '—', color: 'text-blue-400', icon: Bot },
+                { label: 'Рейтинг', val: rating, color: ratingColor, icon: Activity },
               ].map(stat => (
-                <div key={stat.label}>
-                  <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">{stat.label}</div>
+                <div key={stat.label} className="group/stat relative p-4 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-white/10 transition-all hover:scale-[1.02]">
+                  <div className={`absolute right-3 top-3 opacity-20 group-hover/stat:opacity-50 transition-all ${stat.color}`}>
+                    <stat.icon className="w-5 h-5" />
+                  </div>
+                  <div className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2">{stat.label}</div>
                   <div className={`text-2xl font-black tracking-tight ${stat.color}`}>{stat.val}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+
+        {/* Right column — Protection (de-emphasized), NO logout button here */}
         <div className="space-y-6">
-          <div className="rounded-[40px] p-8 bg-gradient-to-br from-purple-900/40 via-indigo-900/40 to-blue-900/40 border border-white/10 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-blue-400"></div>
-            <div className="w-16 h-16 rounded-3xl bg-white/10 flex items-center justify-center mx-auto mb-6 shadow-xl border border-white/10">
-              <Shield className="w-8 h-8 text-white" strokeWidth={1.5} />
+          <div className="rounded-[36px] p-6 bg-[#0a0a0a]/60 border border-white/5 text-center relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-purple-500/20 to-blue-500/20"></div>
+
+            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/5 text-gray-400 group-hover:text-purple-400 transition-colors">
+              <Shield className="w-6 h-6" strokeWidth={1.5} />
             </div>
-            <h4 className="text-lg font-black text-white tracking-tighter uppercase mb-2">Защита Q-Habit</h4>
-            <p className="text-xs text-indigo-200/60 leading-relaxed font-bold uppercase tracking-widest mb-6">Ваши данные хранятся в зашифрованном виде.</p>
+
+            <h4 className="text-xs font-black text-gray-300 tracking-widest uppercase mb-2">Защита Q-Habit</h4>
+            <p className="text-[10px] text-gray-600 leading-relaxed font-bold uppercase tracking-widest">
+              Данные зашифрованы
+            </p>
           </div>
-          <button onClick={() => signOut()} className="w-full flex items-center justify-center gap-3 p-6 rounded-[32px] bg-red-600/5 border border-red-500/20 text-red-500 hover:bg-red-600 hover:text-white transition-all duration-300 font-black uppercase tracking-[0.2em] text-xs shadow-lg shadow-red-500/5 group">
-            <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform" /> Выйти
-          </button>
         </div>
       </div>
     </div>
