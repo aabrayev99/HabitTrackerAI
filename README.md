@@ -50,7 +50,7 @@ NEXTAUTH_SECRET="your-secret-key-for-development-please-change-in-production"
 NEXTAUTH_URL="http://localhost:3000"
 
 # DeepSeek API
-DEEPSEEK_API_KEY="sk-df2bb1296d714828b9e3a266a862706b"
+DEEPSEEK_API_KEY="your_key_here"
 
 # App
 APP_URL="http://localhost:3000"
