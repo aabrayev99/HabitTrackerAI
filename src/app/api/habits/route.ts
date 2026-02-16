@@ -43,7 +43,7 @@ export async function GET() {
     })
 
     // Вычисляем streak для каждой привычки
-    const habitsWithStats = habits.map((habit) => {
+    const habitsWithStats = habits.map((habit: any) => {
       const entries = habit.entries
       let currentStreak = 0
 
@@ -54,7 +54,7 @@ export async function GET() {
 
       while (true) {
         const dateString = date.toISOString().split('T')[0]
-        const entry = entries.find(e => e.date.toISOString().split('T')[0] === dateString)
+        const entry = entries.find((e: any) => e.date.toISOString().split('T')[0] === dateString)
 
         if (entry?.completed) {
           currentStreak++
@@ -70,7 +70,7 @@ export async function GET() {
       }
 
       // Вычисляем процент выполнения за последние 30 дней
-      const completedEntries = entries.filter(e => e.completed).length
+      const completedEntries = entries.filter((e: any) => e.completed).length
       const totalDays = Math.min(30, Math.ceil((Date.now() - new Date(habit.startDate).getTime()) / (24 * 60 * 60 * 1000)))
       const completionRate = totalDays > 0 ? Math.round((completedEntries / totalDays) * 100) : 0
 
