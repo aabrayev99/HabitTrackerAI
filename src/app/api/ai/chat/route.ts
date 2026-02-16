@@ -43,8 +43,8 @@ export async function POST(req: NextRequest) {
     })
 
     // Формируем контекст для ИИ
-    const habitsSummary = habits.map(habit => {
-      const completedThisWeek = habit.entries.filter(e => e.completed).length
+    const habitsSummary = habits.map((habit: any) => {
+      const completedThisWeek = habit.entries.filter((e: any) => e.completed).length
       const totalDaysThisWeek = Math.min(7, Math.ceil((Date.now() - new Date(habit.startDate).getTime()) / (24 * 60 * 60 * 1000)))
       const weeklyRate = totalDaysThisWeek > 0 ? Math.round((completedThisWeek / totalDaysThisWeek) * 100) : 0
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
         weeklyCompletionRate: weeklyRate,
         completedDaysThisWeek: completedThisWeek
       }
-    }).filter(h => h.weeklyCompletionRate > 0 || h.completedDaysThisWeek > 0)
+    }).filter((h: any) => h.weeklyCompletionRate > 0 || h.completedDaysThisWeek > 0)
 
     // Системный промпт для ИИ
     const systemPrompt = `Ты — персональный консультант по формированию привычек. Твоя задача — мотивировать пользователей, давать полезные советы и помогать достигать целей.
