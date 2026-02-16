@@ -10,7 +10,7 @@ import { AddHabitButton } from '@/components/habits/add-habit-button'
 import {
   LayoutDashboard, CalendarDays, Target, Bot, Settings, Bell, Search,
   Droplets, Activity, Lightbulb, X, ChevronLeft, ChevronRight,
-  Check, Minus, Filter, Plus, Pencil, Trash2, Save, User, Mail, Shield, LogOut, Flame, CheckCircle2, Calendar, Camera
+  Check, Minus, Filter, Plus, Pencil, Trash2, Save, User, Mail, Shield, LogOut, Flame, CheckCircle2, Calendar, Camera, Menu
 } from 'lucide-react'
 
 // =============================================
@@ -64,56 +64,93 @@ const Sidebar = ({ activeTab, setActiveTab }: { activeTab: string; setActiveTab:
 );
 
 // =============================================
+// MOBILE BOTTOM NAV
+// =============================================
+const MobileNav = ({ activeTab, setActiveTab }: { activeTab: string; setActiveTab: (t: string) => void }) => (
+  <nav className="fixed bottom-0 left-0 right-0 lg:hidden z-50 bg-[#050505]/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom">
+    <div className="flex items-center justify-around h-16 px-2">
+      {[
+        { id: 'dashboard', icon: LayoutDashboard, label: 'Главная' },
+        { id: 'calendar', icon: CalendarDays, label: 'Календарь' },
+        { id: 'goals', icon: Target, label: 'Цели' },
+        { id: 'profile', icon: Settings, label: 'Профиль' },
+      ].map(tab => (
+        <button
+          key={tab.id}
+          onClick={() => setActiveTab(tab.id)}
+          className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-all duration-300 min-w-[60px] ${activeTab === tab.id
+              ? 'text-purple-400'
+              : 'text-gray-500 active:text-white'
+            }`}
+        >
+          <tab.icon className={`w-5 h-5 transition-all ${activeTab === tab.id ? 'scale-110' : ''}`} strokeWidth={activeTab === tab.id ? 2 : 1.5} />
+          <span className={`text-[10px] font-bold tracking-wider ${activeTab === tab.id ? 'text-purple-400' : 'text-gray-600'}`}>{tab.label}</span>
+          {activeTab === tab.id && <div className="w-1 h-1 rounded-full bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.8)]"></div>}
+        </button>
+      ))}
+    </div>
+  </nav>
+)
+
+// =============================================
 // HEADER — linear layout, no dropdown
 // =============================================
 const Header = ({ user, signOut: doSignOut, activeTab, setActiveTab }: any) => {
   const tabNames: Record<string, string> = { dashboard: 'Главная', calendar: 'Календарь', goals: 'Мои Цели', profile: 'Личный кабинет' }
   return (
-    <header className="fixed lg:left-64 top-0 right-0 h-20 bg-[#030014]/80 backdrop-blur-[20px] border-b border-white/5 flex items-center px-8 z-30">
+    <header className="fixed lg:left-64 left-0 top-0 right-0 h-16 lg:h-20 bg-[#030014]/80 backdrop-blur-[20px] border-b border-white/5 flex items-center px-4 lg:px-8 z-30">
 
-      {/* Left: Breadcrumb */}
-      <div className="text-sm text-gray-400 hidden md:flex items-center gap-3 font-medium shrink-0 mr-auto">
-        <Link href="/" className="hover:text-white transition-all">Главная</Link>
-        <span className="text-gray-700">/</span>
-        <button onClick={() => setActiveTab('dashboard')} className="hover:text-white transition-all">Дашборд</button>
-        <span className="text-gray-700">/</span>
-        <span className="text-white font-bold tracking-tight">{tabNames[activeTab] || 'Дашборд'}</span>
+      {/* Left: Mobile title / Desktop breadcrumb */}
+      <div className="flex items-center gap-3 mr-auto min-w-0">
+        {/* Mobile: just show current tab */}
+        <div className="flex lg:hidden items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-[0_0_10px_rgba(168,85,247,0.3)]">Q</div>
+          <span className="text-sm font-bold text-white tracking-tight truncate">{tabNames[activeTab] || 'Дашборд'}</span>
+        </div>
+        {/* Desktop breadcrumb */}
+        <div className="text-sm text-gray-400 hidden lg:flex items-center gap-3 font-medium shrink-0">
+          <Link href="/" className="hover:text-white transition-all">Главная</Link>
+          <span className="text-gray-700">/</span>
+          <button onClick={() => setActiveTab('dashboard')} className="hover:text-white transition-all">Дашборд</button>
+          <span className="text-gray-700">/</span>
+          <span className="text-white font-bold tracking-tight">{tabNames[activeTab] || 'Дашборд'}</span>
+        </div>
       </div>
 
-      {/* Right: fixed group that never overlaps search */}
-      <div className="flex items-center gap-4 shrink-0 ml-auto">
-        {/* Search */}
+      {/* Right: controls */}
+      <div className="flex items-center gap-2 lg:gap-4 shrink-0 ml-auto">
+        {/* Search — desktop only */}
         <div className="relative hidden xl:block group">
           <input type="text" placeholder="Поиск..." className="auth-input bg-white/5 border-white/10 rounded-2xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50 w-48 transition-all duration-500" />
           <span className="absolute left-3.5 top-3 text-gray-500 group-focus-within:text-purple-400 transition-colors"><Search className="w-4 h-4" strokeWidth={2} /></span>
         </div>
 
         {/* Bell */}
-        <button className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all duration-300">
-          <Bell className="w-5 h-5" strokeWidth={1.5} />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-purple-500 rounded-full border-2 border-[#030014] animate-pulse"></span>
+        <button className="relative p-2 lg:p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all duration-300">
+          <Bell className="w-4 h-4 lg:w-5 lg:h-5" strokeWidth={1.5} />
+          <span className="absolute top-2 right-2 lg:top-2.5 lg:right-2.5 w-2 h-2 bg-purple-500 rounded-full border-2 border-[#030014] animate-pulse"></span>
         </button>
 
-        {/* Divider */}
-        <div className="w-px h-8 bg-white/10"></div>
+        {/* Divider — desktop only */}
+        <div className="w-px h-8 bg-white/10 hidden sm:block"></div>
 
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-blue-500 p-[1.5px] shadow-lg shadow-purple-500/20 shrink-0">
-          <div className="w-full h-full rounded-2xl bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
+        <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-xl lg:rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-blue-500 p-[1.5px] shadow-lg shadow-purple-500/20 shrink-0">
+          <div className="w-full h-full rounded-xl lg:rounded-2xl bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
             {user?.image ? <img src={user.image} alt="User" className="w-full h-full object-cover" /> : <span className="text-xs font-black text-white">{user?.name?.[0]}</span>}
           </div>
         </div>
 
-        {/* Name */}
-        <span className="hidden sm:block text-sm font-bold text-white tracking-wide whitespace-nowrap">{user?.name}</span>
+        {/* Name — hidden on mobile */}
+        <span className="hidden lg:block text-sm font-bold text-white tracking-wide whitespace-nowrap">{user?.name}</span>
 
-        {/* Profile link */}
-        <button onClick={() => setActiveTab('profile')} className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-purple-400 transition-colors whitespace-nowrap">
+        {/* Profile link — hidden on mobile */}
+        <button onClick={() => setActiveTab('profile')} className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-purple-400 transition-colors whitespace-nowrap">
           <User className="w-3.5 h-3.5" /> Профиль
         </button>
 
         {/* Logout */}
-        <button onClick={() => doSignOut()} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-400/60 hover:text-red-400 hover:bg-red-500/5 transition-all whitespace-nowrap">
+        <button onClick={() => doSignOut()} className="flex items-center gap-1.5 px-2 lg:px-3 py-2 rounded-xl text-xs font-bold text-red-400/60 hover:text-red-400 hover:bg-red-500/5 transition-all whitespace-nowrap">
           <LogOut className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Выйти</span>
         </button>
       </div>
@@ -154,10 +191,10 @@ function CalendarView({ habits }: { habits: any[] }) {
   const isToday = (day: number) => today.getFullYear() === year && today.getMonth() === month && today.getDate() === day
 
   return (
-    <div className="rounded-[32px] border border-white/5 bg-[#0a0a0a]/50 backdrop-blur-sm p-8 animate-[auth-entrance_0.5s_ease-out_both]">
+    <div className="rounded-[20px] sm:rounded-[32px] border border-white/5 bg-[#0a0a0a]/50 backdrop-blur-sm p-4 sm:p-8 animate-[auth-entrance_0.5s_ease-out_both]">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h2 className="text-3xl font-bold bg-gradient-to-b from-white to-gray-500 text-transparent bg-clip-text tracking-tighter" style={{ letterSpacing: '-0.04em' }}>{monthNames[month]} {year}</h2>
+          <h2 className="text-xl sm:text-3xl font-bold bg-gradient-to-b from-white to-gray-500 text-transparent bg-clip-text tracking-tighter" style={{ letterSpacing: '-0.04em' }}>{monthNames[month]} {year}</h2>
           <p className="text-sm text-gray-500 font-medium tracking-wide mt-1 uppercase">Рекорд активности — {habits.length > 0 ? '92%' : '0%'}</p>
         </div>
         <div className="flex gap-2">
@@ -166,18 +203,18 @@ function CalendarView({ habits }: { habits: any[] }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-3 mb-4">
+      <div className="grid grid-cols-7 gap-1 sm:gap-3 mb-4">
         {dayNames.map(d => <div key={d} className="text-center text-xs font-black text-gray-500 uppercase tracking-[0.2em]">{d}</div>)}
       </div>
 
-      <div className="grid grid-cols-7 gap-3">
+      <div className="grid grid-cols-7 gap-1 sm:gap-3">
         {Array.from({ length: startOffset }).map((_, i) => <div key={`empty-${i}`} className="aspect-square"></div>)}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day = i + 1
           const status = getDayStatus(day)
           const todayMarker = isToday(day)
           return (
-            <div key={day} className={`group relative aspect-square flex flex-col items-center justify-center rounded-[20px] text-lg transition-all duration-300 border
+            <div key={day} className={`group relative aspect-square flex flex-col items-center justify-center rounded-xl sm:rounded-[20px] text-sm sm:text-lg transition-all duration-300 border
               ${todayMarker ? 'bg-purple-600/10 border-purple-500/40' : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/5 hover:scale-105'}
               ${status === 'done' ? 'bg-green-500/10 border-green-500/20' : ''}
               ${status === 'missed' ? 'bg-red-500/5 border-red-500/10' : ''}
@@ -514,17 +551,18 @@ function DashboardContent() {
 
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <Header user={userWithImage} signOut={signOut} activeTab={activeTab} setActiveTab={setActiveTab} />
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main scrollable area — ONLY this scrolls */}
-      <main className="lg:ml-64 mt-20 flex-1 overflow-y-auto relative z-10 p-8">
+      <main className="lg:ml-64 mt-16 lg:mt-20 flex-1 overflow-y-auto relative z-10 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
         {/* Page Title & Actions */}
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-16 gap-8 animate-[auth-entrance_0.4s_ease-out_both] delay-75">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 lg:mb-16 gap-4 lg:gap-8 animate-[auth-entrance_0.4s_ease-out_both] delay-75">
           <div className="relative max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-b from-white via-white to-gray-500 text-transparent bg-clip-text tracking-tighter inline-block relative pr-8 leading-tight" style={{ letterSpacing: '-0.04em' }}>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black bg-gradient-to-b from-white via-white to-gray-500 text-transparent bg-clip-text tracking-tighter inline-block relative pr-4 sm:pr-8 leading-tight" style={{ letterSpacing: '-0.04em' }}>
               {tabTitles[activeTab]?.title}
             </h1>
-            <p className="text-sm text-gray-500 mt-3 font-bold uppercase tracking-widest flex items-center gap-2">
-              <span className="w-6 h-px bg-purple-500/50"></span>
+            <p className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3 font-bold uppercase tracking-widest flex items-center gap-2">
+              <span className="w-4 sm:w-6 h-px bg-purple-500/50"></span>
               {tabTitles[activeTab]?.subtitle}
             </p>
           </div>
@@ -542,7 +580,7 @@ function DashboardContent() {
             <QuickStats habits={habits} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-8">
-                <div className="rounded-[40px] border border-white/5 bg-[#0a0a0a]/40 backdrop-blur-2xl p-8 md:p-10 relative group overflow-hidden shadow-2xl">
+                <div className="rounded-[24px] sm:rounded-[40px] border border-white/5 bg-[#0a0a0a]/40 backdrop-blur-2xl p-4 sm:p-8 md:p-10 relative group overflow-hidden shadow-2xl">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/5 rounded-full blur-[80px] group-hover:bg-purple-500/10 transition-all"></div>
                   <div className="flex justify-between items-center mb-10 px-2 relative z-10">
                     <div>
@@ -556,12 +594,12 @@ function DashboardContent() {
 
               {/* Widgets Column */}
               <div className="space-y-8">
-                <div className="rounded-[40px] border border-white/5 bg-gradient-to-br from-[#0f0f0f] via-[#0a0a0a] to-[#050505] p-10 relative overflow-hidden shadow-2xl border-t border-t-white/10">
+                <div className="rounded-[24px] sm:rounded-[40px] border border-white/5 bg-gradient-to-br from-[#0f0f0f] via-[#0a0a0a] to-[#050505] p-6 sm:p-10 relative overflow-hidden shadow-2xl border-t border-t-white/10">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-purple-600/10 rounded-full blur-[60px]"></div>
                   <div className="relative z-10">
                     <h3 className="text-xs font-black text-purple-400 uppercase tracking-[0.3em] mb-6">Продуктивность</h3>
                     <div className="flex items-end gap-3 mb-4 flex-wrap">
-                      <div className="text-6xl font-black text-white tracking-tighter">84<span className="text-2xl text-purple-500">%</span></div>
+                      <div className="text-4xl sm:text-6xl font-black text-white tracking-tighter">84<span className="text-xl sm:text-2xl text-purple-500">%</span></div>
                       <div className="text-sm text-green-400 font-black mb-3 underline decoration-double decoration-green-900">+2.4</div>
                     </div>
                     <div className="h-3 bg-white/5 rounded-full overflow-hidden mb-6 group cursor-help">
@@ -571,7 +609,7 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                <div className="rounded-[40px] border border-white/5 bg-[#0a0a0a]/40 p-8">
+                <div className="rounded-[24px] sm:rounded-[40px] border border-white/5 bg-[#0a0a0a]/40 p-4 sm:p-8">
                   <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-6 px-2">Сигналы</h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4 p-4 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/5 transition-all cursor-pointer group">
@@ -667,16 +705,16 @@ function ProfileView({ user, habits, onImageUploaded }: { user: any, habits: any
   }
 
   return (
-    <div className="max-w-4xl animate-[auth-entrance_0.5s_ease-out_both] pb-10">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <div className="rounded-[40px] border border-white/5 bg-[#0a0a0a]/40 p-10 relative overflow-hidden group">
+    <div className="max-w-4xl animate-[auth-entrance_0.5s_ease-out_both] pb-24 lg:pb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="lg:col-span-2 space-y-6 lg:space-y-8">
+          <div className="rounded-[24px] sm:rounded-[40px] border border-white/5 bg-[#0a0a0a]/40 p-5 sm:p-10 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/5 rounded-full blur-[80px] group-hover:bg-purple-500/10 transition-all duration-700"></div>
 
             <div className="flex flex-col md:flex-row items-center gap-10 relative z-10 flex-wrap">
               {/* Avatar Upload */}
               <div className="relative group/avatar cursor-pointer shrink-0">
-                <div className="w-32 h-32 rounded-[32px] bg-gradient-to-tr from-purple-500 to-blue-500 p-[2px] shadow-2xl shadow-purple-500/20">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-[24px] sm:rounded-[32px] bg-gradient-to-tr from-purple-500 to-blue-500 p-[2px] shadow-2xl shadow-purple-500/20">
                   <div className="w-full h-full rounded-[30px] bg-[#0a0a0a] flex items-center justify-center overflow-hidden relative">
                     {displayImage ? (
                       <img src={displayImage} alt="Avatar" className="w-full h-full object-cover transition-transform group-hover/avatar:scale-105" />
@@ -700,7 +738,7 @@ function ProfileView({ user, habits, onImageUploaded }: { user: any, habits: any
               </div>
 
               <div className="text-center md:text-left min-w-0">
-                <h2 className="text-4xl font-black bg-gradient-to-b from-white to-gray-500 text-transparent bg-clip-text tracking-tighter" style={{ letterSpacing: '-0.04em' }}>{user?.name}</h2>
+                <h2 className="text-2xl sm:text-4xl font-black bg-gradient-to-b from-white to-gray-500 text-transparent bg-clip-text tracking-tighter" style={{ letterSpacing: '-0.04em' }}>{user?.name}</h2>
                 <div className="flex items-center gap-2 mt-3 text-gray-500 font-bold uppercase text-xs tracking-widest justify-center md:justify-start flex-wrap">
                   <Mail className="w-3.5 h-3.5 text-purple-500 shrink-0" /> <span className="truncate">{user?.email}</span>
                 </div>
@@ -714,7 +752,7 @@ function ProfileView({ user, habits, onImageUploaded }: { user: any, habits: any
             </div>
 
             {/* Dynamic Glassmorphism Stats — flex-wrap */}
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 pt-10 border-t border-white/5">
+            <div className="mt-8 sm:mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pt-6 sm:pt-10 border-t border-white/5">
               {[
                 { label: 'Всего Целей', val: totalGoals, color: 'text-purple-400', icon: Target },
                 { label: 'Лучший Стрик', val: maxStreak, color: 'text-orange-400', icon: Flame },

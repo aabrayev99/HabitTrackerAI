@@ -8,7 +8,7 @@ interface QuickStatsProps {
 }
 
 const StatCard = ({ title, value, prefix, suffix, color, icon }: any) => (
-  <div className="relative overflow-hidden rounded-[28px] bg-white/[0.03] border border-white/5 p-6 hover:border-white/20 transition-all duration-500 group hover:scale-[1.02] shadow-xl">
+  <div className="relative overflow-hidden rounded-[20px] sm:rounded-[28px] bg-white/[0.03] border border-white/5 p-4 sm:p-6 hover:border-white/20 transition-all duration-500 group hover:scale-[1.02] shadow-xl">
     {/* Background Glow */}
     <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full ${color} opacity-5 blur-3xl group-hover:opacity-20 transition-opacity duration-700`}></div>
 
@@ -24,7 +24,7 @@ const StatCard = ({ title, value, prefix, suffix, color, icon }: any) => (
 
     <div className="relative z-10">
       <div className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">{title}</div>
-      <div className="text-4xl font-black text-white tracking-tighter flex items-baseline gap-1.5" style={{ letterSpacing: '-0.05em' }}>
+      <div className="text-3xl sm:text-4xl font-black text-white tracking-tighter flex items-baseline gap-1.5" style={{ letterSpacing: '-0.05em' }}>
         {prefix && <span className="text-xl text-gray-600 font-bold">{prefix}</span>}
         {value}
       </div>
@@ -55,7 +55,7 @@ export function QuickStats({ habits }: QuickStatsProps) {
   const bestStreak = Math.max(...habits.map(h => h.currentStreak || 0), 0)
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 lg:mb-12">
       <StatCard
         title="Выполнено сегодня"
         value={stats.completedToday}
