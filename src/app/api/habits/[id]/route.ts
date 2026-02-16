@@ -16,9 +16,10 @@ const updateHabitSchema = z.object({
 // GET /api/habits/[id] - получить конкретную привычку
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -30,7 +31,7 @@ export async function GET(
 
     const habit = await prisma.habit.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
       include: {
@@ -65,9 +66,10 @@ export async function GET(
 // PUT /api/habits/[id] - обновить привычку
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -88,7 +90,7 @@ export async function PUT(
     // Проверяем, что привычка принадлежит пользователю
     const existingHabit = await prisma.habit.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
     })
@@ -101,9 +103,7 @@ export async function PUT(
     }
 
     const updatedHabit = await prisma.habit.update({
-      where: {
-        id: params.id,
-      },
+      where: { id },
       data: updateData,
     })
 
@@ -111,7 +111,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: 'Неверные данные', errors: error.errors },
+        { message: 'Неверные данные', errors: error.issues },
         { status: 400 }
       )
     }
@@ -127,9 +127,10 @@ export async function PUT(
 // DELETE /api/habits/[id] - удалить привычку
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -142,7 +143,7 @@ export async function DELETE(
     // Проверяем, что привычка принадлежит пользователю
     const existingHabit = await prisma.habit.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
     })
@@ -156,12 +157,8 @@ export async function DELETE(
 
     // Мягкое удаление - устанавливаем isActive в false
     await prisma.habit.update({
-      where: {
-        id: params.id,
-      },
-      data: {
-        isActive: false,
-      },
+      where: { id },
+      data: { isActive: false },
     })
 
     return NextResponse.json({ message: 'Привычка удалена' })

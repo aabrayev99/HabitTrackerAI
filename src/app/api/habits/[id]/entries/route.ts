@@ -13,9 +13,10 @@ const habitEntrySchema = z.object({
 // POST /api/habits/[id]/entries - отметить выполнение привычки
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -31,7 +32,7 @@ export async function POST(
     // Проверяем, что привычка принадлежит пользователю
     const habit = await prisma.habit.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
     })
@@ -47,13 +48,13 @@ export async function POST(
     const entry = await prisma.habitEntry.upsert({
       where: {
         habitId_userId_date: {
-          habitId: params.id,
+          habitId: id,
           userId: session.user.id,
           date: new Date(date),
         },
       },
       create: {
-        habitId: params.id,
+        habitId: id,
         userId: session.user.id,
         date: new Date(date),
         completed,
@@ -69,7 +70,7 @@ export async function POST(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: 'Неверные данные', errors: error.errors },
+        { message: 'Неверные данные', errors: error.issues },
         { status: 400 }
       )
     }
@@ -85,9 +86,10 @@ export async function POST(
 // GET /api/habits/[id]/entries - получить записи выполнения привычки
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -103,7 +105,7 @@ export async function GET(
     // Проверяем, что привычка принадлежит пользователю
     const habit = await prisma.habit.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
     })
@@ -117,7 +119,7 @@ export async function GET(
 
     const entries = await prisma.habitEntry.findMany({
       where: {
-        habitId: params.id,
+        habitId: id,
         userId: session.user.id,
         date: {
           gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000),

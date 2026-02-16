@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       const completedThisWeek = habit.entries.filter(e => e.completed).length
       const totalDaysThisWeek = Math.min(7, Math.ceil((Date.now() - new Date(habit.startDate).getTime()) / (24 * 60 * 60 * 1000)))
       const weeklyRate = totalDaysThisWeek > 0 ? Math.round((completedThisWeek / totalDaysThisWeek) * 100) : 0
-      
+
       return {
         name: habit.title,
         description: habit.description,
@@ -93,14 +93,14 @@ export async function POST(req: NextRequest) {
     }
 
     const messages = conversation.messages as any[]
-    
+
     // Добавляем новое сообщение пользователя
     const userMessage = {
       role: 'user',
       content: message,
       timestamp: new Date().toISOString(),
     }
-    
+
     messages.push(userMessage)
 
     // Подготавливаем сообщения для DeepSeek API
@@ -130,9 +130,9 @@ export async function POST(req: NextRequest) {
     if (!deepSeekResponse.ok) {
       const error = await deepSeekResponse.text()
       console.error('DeepSeek API error:', error)
-      
+
       return NextResponse.json(
-        { 
+        {
           message: 'Извините, ИИ-консультант временно недоступен. Попробуйте позже.',
           error: 'API_ERROR'
         },
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
       content: aiResponse,
       timestamp: new Date().toISOString(),
     }
-    
+
     messages.push(aiMessage)
 
     // Обновляем разговор в базе данных
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: 'Неверные данные', errors: error.errors },
+        { message: 'Неверные данные', errors: error.issues },
         { status: 400 }
       )
     }

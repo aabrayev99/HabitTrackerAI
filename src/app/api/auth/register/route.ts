@@ -42,16 +42,16 @@ export async function POST(req: NextRequest) {
     const { hashedPassword: _, ...userWithoutPassword } = user
 
     return NextResponse.json(
-      { 
-        message: 'Пользователь успешно создан', 
-        user: userWithoutPassword 
+      {
+        message: 'Пользователь успешно создан',
+        user: userWithoutPassword
       },
       { status: 201 }
     )
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: 'Неверные данные', errors: error.errors },
+        { message: 'Неверные данные', errors: error.issues },
         { status: 400 }
       )
     }
