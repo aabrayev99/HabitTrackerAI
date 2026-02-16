@@ -9,6 +9,7 @@ const createHabitSchema = z.object({
   description: z.string().optional(),
   frequency: z.enum(['daily', 'weekly', 'custom']).default('daily'),
   tags: z.array(z.string()).default([]),
+  endDate: z.string().optional(),
 })
 
 // GET /api/habits - получить все привычки пользователя
@@ -45,16 +46,16 @@ export async function GET() {
     const habitsWithStats = habits.map((habit) => {
       const entries = habit.entries
       let currentStreak = 0
-      
+
       // Считаем текущий streak
       const today = new Date()
       const todayString = today.toISOString().split('T')[0]
       let date = new Date(today)
-      
+
       while (true) {
         const dateString = date.toISOString().split('T')[0]
         const entry = entries.find(e => e.date.toISOString().split('T')[0] === dateString)
-        
+
         if (entry?.completed) {
           currentStreak++
         } else if (dateString !== todayString) {
@@ -64,7 +65,7 @@ export async function GET() {
           // Сегодня еще можно выполнить
           break
         }
-        
+
         date.setDate(date.getDate() - 1)
       }
 
@@ -104,11 +105,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const data = createHabitSchema.parse(body)
+    const parsed = createHabitSchema.parse(body)
 
     const habit = await prisma.habit.create({
       data: {
-        ...data,
+        title: parsed.title,
+        description: parsed.description,
+        frequency: parsed.frequency,
+        tags: parsed.tags,
+        endDate: parsed.endDate ? new Date(parsed.endDate) : undefined,
         userId: session.user.id,
       },
     })

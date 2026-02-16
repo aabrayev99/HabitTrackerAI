@@ -558,3 +558,146 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* ============================================
+   NEON PULSE TEXT (for «Твой Пульс»)
+   ============================================ */
+.neon-pulse-text {
+  color: #c084fc;
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.3);
+  animation: neon-text-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes neon-text-pulse {
+
+  0%,
+  100% {
+    text-shadow: 0 0 8px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.3);
+    color: #c084fc;
+  }
+
+  50% {
+    text-shadow: 0 0 16px rgba(168, 85, 247, 1), 0 0 40px rgba(168, 85, 247, 0.5), 0 0 60px rgba(139, 92, 246, 0.3);
+    color: #e9d5ff;
+  }
+}
+
+/* ============================================
+   PAGE TRANSITION
+   ============================================ */
+.page-transition-wrapper {
+  animation: page-fade-in 0.5s ease-out forwards;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   AUTH PAGES
+   ============================================ */
+
+/* Auth Inputs — dark bg with blue focus glow */
+.auth-input {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.auth-input:focus {
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.15), 0 0 20px rgba(168, 85, 247, 0.08);
+}
+
+/* Form entrance — fade + scale */
+@keyframes auth-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Ambient floating blobs */
+@keyframes auth-blob-1 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(40px, -30px);
+  }
+
+  50% {
+    transform: translate(-20px, 50px);
+  }
+
+  75% {
+    transform: translate(30px, 20px);
+  }
+}
+
+@keyframes auth-blob-2 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-50px, 20px);
+  }
+
+  50% {
+    transform: translate(30px, -40px);
+  }
+
+  75% {
+    transform: translate(-20px, -30px);
+  }
+}
+
+@keyframes auth-blob-3 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  33% {
+    transform: translate(60px, 30px);
+  }
+
+  66% {
+    transform: translate(-40px, -20px);
+  }
+}
+
+@keyframes auth-blob-4 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  30% {
+    transform: translate(-30px, 40px);
+  }
+
+  60% {
+    transform: translate(50px, -30px);
+  }
+}

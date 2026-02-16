@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google"; // Modern sans-serif
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { GlobalCursor } from "@/components/global-cursor";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -10,8 +11,8 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Motivation Quoest - Build Your Habits",
-  description: "Experience the next level of habit tracking and motivation.",
+  title: "Q-Habit — Трекер привычек нового поколения",
+  description: "Формируй привычки с помощью AI, аналитики и геймификации. Q-Habit — твой путь к совершенству.",
 };
 
 export default function RootLayout({
@@ -20,10 +21,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="cosmic" className={jakarta.variable}>
+    <html lang="ru" data-theme="cosmic" className={jakarta.variable}>
       <body className="antialiased min-h-screen">
+        <GlobalCursor />
         <Providers>
-          {children}
+          <div className="page-transition-wrapper">
+            {children}
+          </div>
         </Providers>
       </body>
     </html>

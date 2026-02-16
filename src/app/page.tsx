@@ -5,71 +5,6 @@ import { useEffect, useRef } from 'react';
 import { BarChart3, Bot, Trophy, ClipboardList } from 'lucide-react';
 
 // =============================================
-// CUSTOM CURSOR COMPONENT
-// =============================================
-function CustomCursor() {
-  const cursorRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const cursor = cursorRef.current;
-    if (!cursor) return;
-
-    // Trail particles pool
-    const trailPool: HTMLDivElement[] = [];
-    for (let i = 0; i < 10; i++) {
-      const trail = document.createElement('div');
-      trail.className = 'cursor-trail';
-      document.body.appendChild(trail);
-      trailPool.push(trail);
-    }
-    let trailIndex = 0;
-
-    const moveCursor = (e: MouseEvent) => {
-      cursor.style.left = e.clientX + 'px';
-      cursor.style.top = e.clientY + 'px';
-
-      // Trail effect
-      const trail = trailPool[trailIndex % trailPool.length];
-      trail.style.left = e.clientX + 'px';
-      trail.style.top = e.clientY + 'px';
-      trail.style.opacity = '0.6';
-      setTimeout(() => { trail.style.opacity = '0'; }, 300);
-      trailIndex++;
-    };
-
-    const addHover = () => cursor.classList.add('hovering');
-    const removeHover = () => cursor.classList.remove('hovering');
-    const addClick = () => { cursor.classList.add('clicking'); setTimeout(() => cursor.classList.remove('clicking'), 300); };
-
-    document.addEventListener('mousemove', moveCursor);
-    document.addEventListener('mousedown', addClick);
-
-    // Observe DOM for dynamically added clickables
-    const attachHoverListeners = () => {
-      const clickables = document.querySelectorAll('a, button, [role="button"], input, textarea, select, label[for]');
-      clickables.forEach(el => {
-        el.removeEventListener('mouseenter', addHover);
-        el.removeEventListener('mouseleave', removeHover);
-        el.addEventListener('mouseenter', addHover);
-        el.addEventListener('mouseleave', removeHover);
-      });
-    };
-    attachHoverListeners();
-    const observer = new MutationObserver(attachHoverListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      document.removeEventListener('mousemove', moveCursor);
-      document.removeEventListener('mousedown', addClick);
-      observer.disconnect();
-      trailPool.forEach(t => t.remove());
-    };
-  }, []);
-
-  return <div ref={cursorRef} className="custom-cursor" />;
-}
-
-// =============================================
 // MINI SVG CHART (Fake line chart with neon glow)
 // =============================================
 const MiniLineChart = ({ color = '#a855f7', data }: { color?: string; data: number[] }) => {
@@ -147,6 +82,7 @@ const Navbar = () => (
     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
       <a href="#features" className="hover:text-white transition-colors">Возможности</a>
       <a href="#reviews" className="hover:text-white transition-colors">Отзывы</a>
+      <a href="#ai" className="hover:text-white transition-colors">AI</a>
       <a href="#blog" className="hover:text-white transition-colors">Блог</a>
     </div>
 
@@ -187,9 +123,17 @@ const ReviewCard = ({ name, role, text, avatar }: any) => (
 // =============================================
 // BLOG CARD
 // =============================================
-const BlogCard = ({ title, category, date, imageGradient, slug }: any) => (
+const BlogCard = ({ title, category, date, image, slug }: any) => (
   <Link href={`/blog/${slug}`} className="card-pop rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/5 cursor-pointer group block">
-    <div className={`h-52 w-full bg-gradient-to-br ${imageGradient} relative`}>
+    <div className="h-52 w-full relative overflow-hidden">
+      <img
+        src={image}
+        alt={title}
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+      />
+      {/* Gradient fade to card bg */}
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#0a0a0a] to-transparent"></div>
       <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs text-white border border-white/10 font-medium">
         {category}
       </div>
@@ -298,10 +242,10 @@ const TransformationSection = () => {
     <section ref={sectionRef} id="transformation" className="px-6 max-w-7xl mx-auto mb-32 scroll-mt-20">
       {/* Section Header */}
       <div className="text-center mb-16 scroll-reveal">
-        <p className="text-purple-400 text-sm font-semibold uppercase tracking-widest mb-3">Трансформация</p>
         <h2 className="text-3xl md:text-5xl font-bold mb-4">
-          Трансформация <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">жизни</span>
+          Трансформация <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-300 to-blue-400">жизни</span>
         </h2>
+
         <p className="text-gray-400 text-lg max-w-xl mx-auto">
           Три концепции, которые лежат в основе Q-Habit: свобода от прошлого, эволюция сознания и ясность цели.
         </p>
@@ -384,8 +328,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#030014] text-white font-sans selection:bg-purple-500 selection:text-white overflow-hidden">
 
-      <CustomCursor />
-
       {/* ============================================
           AURORA BOREALIS ANIMATED BACKGROUND
           ============================================ */}
@@ -459,7 +401,7 @@ export default function Home() {
                   <div className="w-3 h-3 rounded-full bg-yellow-500/60"></div>
                   <div className="w-3 h-3 rounded-full bg-green-500/60"></div>
                 </div>
-                <div className="text-xs text-gray-400 font-medium flex items-center gap-1.5"><ClipboardList className="w-3.5 h-3.5" /> Журнал привычек</div>
+                <div className="text-xs font-medium flex items-center gap-1.5 neon-pulse-text"><ClipboardList className="w-3.5 h-3.5" /> Твой Пульс</div>
                 <div className="w-16"></div>
               </div>
 
@@ -617,6 +559,123 @@ export default function Home() {
         </section>
 
         {/* ============================================
+            AI CONSULTANT SECTION
+            ============================================ */}
+        <section id="ai" className="px-6 max-w-7xl mx-auto mb-32 scroll-mt-20">
+          <div className="text-center mb-16">
+            <p className="text-purple-400 text-sm font-semibold uppercase tracking-widest mb-3">Новое</p>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Твой персональный <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-400 to-blue-400">AI-консультант</span>
+            </h2>
+            <p className="text-gray-400 text-lg max-w-xl mx-auto">Задавай вопросы, получай персональные рекомендации и мотивацию — прямо в приложении</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Chat Preview */}
+            <div className="rounded-2xl bg-[#0a0a0a] border border-white/5 overflow-hidden shadow-[0_0_60px_rgba(168,85,247,0.08)]">
+              {/* Chat Header */}
+              <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5 bg-[#0a0a0a]">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-[0_0_12px_rgba(168,85,247,0.4)]">
+                  <Bot className="w-4 h-4 text-white" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-white">AI Консультант</div>
+                  <div className="text-[11px] text-green-400 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-400 rounded-full inline-block"></span> Онлайн</div>
+                </div>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="p-6 space-y-4 min-h-[320px]">
+                {/* User Message */}
+                <div className="flex justify-end">
+                  <div className="bg-purple-600 text-white text-sm px-4 py-3 rounded-2xl rounded-br-md max-w-[75%]">
+                    Как начать медитировать? Мне сложно сидеть без дела 🧘
+                  </div>
+                </div>
+
+                {/* AI Response */}
+                <div className="flex justify-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-[10px] text-white font-bold shrink-0 mt-1">AI</div>
+                  <div className="bg-white/5 border border-white/5 text-gray-200 text-sm px-4 py-3 rounded-2xl rounded-bl-md max-w-[80%]">
+                    <p>Отличный вопрос! Начнём с малого 🎯</p>
+                    <p className="mt-2 text-gray-300"><strong className="text-white">Техника «2 минуты»:</strong> сядьте удобно, закройте глаза, и просто дышите. Не нужно «не думать» — наблюдайте за мыслями как за облаками.</p>
+                    <p className="mt-2 text-gray-400">Я добавлю привычку «Медитация 2 мин» в ваш трекер. Через неделю увеличим до 5 минут 💪</p>
+                  </div>
+                </div>
+
+                {/* User follow-up */}
+                <div className="flex justify-end">
+                  <div className="bg-purple-600 text-white text-sm px-4 py-3 rounded-2xl rounded-br-md max-w-[75%]">
+                    Круто! А когда лучше медитировать?
+                  </div>
+                </div>
+
+                {/* AI typing indicator */}
+                <div className="flex justify-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-[10px] text-white font-bold shrink-0 mt-1">AI</div>
+                  <div className="bg-white/5 border border-white/5 rounded-2xl rounded-bl-md px-4 py-3">
+                    <div className="flex items-center space-x-1.5">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Input mock */}
+              <div className="border-t border-white/5 px-6 py-4 bg-[#050505]/50">
+                <div className="flex gap-3 items-center">
+                  <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-500">Напишите ваш вопрос...</div>
+                  <div className="px-4 py-2.5 bg-purple-600/40 text-purple-300 rounded-xl text-sm font-medium">Отправить</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Features List */}
+            <div className="space-y-8">
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+                  <Bot className="w-6 h-6 text-purple-400" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Персонализированные советы</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">AI анализирует ваши привычки и прогресс, чтобы давать максимально точные рекомендации именно для вас</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                  <BarChart3 className="w-6 h-6 text-blue-400" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Анализ паттернов</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">Распознаёт закономерности в вашем поведении и предлагает оптимальное время для привычек</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-xl bg-green-600/10 border border-green-500/20 flex items-center justify-center shrink-0">
+                  <Trophy className="w-6 h-6 text-green-400" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Мотивация и поддержка</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">Никаких «ты должен». Мягкая мотивация на основе психологии привычек и позитивного подкрепления</p>
+                </div>
+              </div>
+
+              <Link
+                href="/chat"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold text-base hover:opacity-90 transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:shadow-[0_0_40px_rgba(168,85,247,0.5)] mt-4"
+              >
+                <Bot className="w-5 h-5" strokeWidth={1.5} />
+                Попробовать AI-консультанта
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================
             BLOG / POSTS SECTION
             ============================================ */}
         <section id="blog" className="px-6 max-w-7xl mx-auto mb-20 scroll-mt-20">
@@ -635,21 +694,21 @@ export default function Home() {
               title="Как выработать привычку за 21 день: полный гайд"
               category="Дисциплина"
               date="12 Фев 2024"
-              imageGradient="from-purple-600 via-violet-600 to-indigo-700"
+              image="/blog/habit-21-days.png"
               slug="habit-21-days"
             />
             <BlogCard
               title="Секреты утренней рутины успешных людей"
               category="Лайфстайл"
               date="10 Фев 2024"
-              imageGradient="from-pink-500 via-rose-500 to-orange-500"
+              image="/blog/morning-routine.png"
               slug="morning-routine"
             />
             <BlogCard
               title="Дофаминовое голодание: стоит ли пробовать?"
               category="Здоровье"
               date="08 Фев 2024"
-              imageGradient="from-emerald-500 via-green-600 to-teal-700"
+              image="/blog/dopamine-fasting.png"
               slug="dopamine-fasting"
             />
           </div>

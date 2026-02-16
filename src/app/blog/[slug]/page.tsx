@@ -10,6 +10,7 @@ const articlesData: Record<string, any> = {
         category: 'Дисциплина',
         date: '12 Фев 2024',
         readTime: '8 мин',
+        image: '/blog/habit-21-days.png',
         imageGradient: 'from-purple-600 via-violet-600 to-indigo-700',
         content: [
             { type: 'paragraph', text: 'Вы наверняка слышали, что для формирования привычки нужен 21 день. Эта идея восходит к пластическому хирургу Максвеллу Мальцу, который в 1960 году заметил, что его пациентам требуется около 21 дня, чтобы привыкнуть к своему новому облику.' },
@@ -31,6 +32,7 @@ const articlesData: Record<string, any> = {
         category: 'Лайфстайл',
         date: '10 Фев 2024',
         readTime: '6 мин',
+        image: '/blog/morning-routine.png',
         imageGradient: 'from-pink-500 via-rose-500 to-orange-500',
         content: [
             { type: 'paragraph', text: 'Утро задаёт тон всему дню. Исследование Гарвардского университета показало, что люди, придерживающиеся утренней рутины, на 25% продуктивнее тех, кто начинает день хаотично.' },
@@ -48,6 +50,7 @@ const articlesData: Record<string, any> = {
         category: 'Здоровье',
         date: '08 Фев 2024',
         readTime: '7 мин',
+        image: '/blog/dopamine-fasting.png',
         imageGradient: 'from-emerald-500 via-green-600 to-teal-700',
         content: [
             { type: 'paragraph', text: 'Дофаминовое голодание — тренд, зародившийся в Кремниевой долине. Идея проста: временно отказаться от стимулирующих активностей (соцсети, еда, развлечения), чтобы «перезагрузить» систему вознаграждения мозга.' },
@@ -65,6 +68,7 @@ const articlesData: Record<string, any> = {
         category: 'Продуктивность',
         date: '05 Фев 2024',
         readTime: '9 мин',
+        image: '/blog/productivity-systems.png',
         imageGradient: 'from-blue-500 via-sky-600 to-cyan-700',
         content: [
             { type: 'paragraph', text: 'Getting Things Done, Zen To Done, метод Помодоро, матрица Эйзенхауэра — систем продуктивности десятки. Но какая подойдёт именно вам? Разберём каждую и поможем выбрать.' },
@@ -82,6 +86,7 @@ const articlesData: Record<string, any> = {
         category: 'Осознанность',
         date: '02 Фев 2024',
         readTime: '5 мин',
+        image: '/blog/meditation-guide.png',
         imageGradient: 'from-amber-500 via-orange-500 to-red-600',
         content: [
             { type: 'paragraph', text: '10 минут медитации в день снижают тревожность на 40% — это подтверждено метаанализом 47 исследований с участием более 3 500 человек. И для старта не нужно ничего, кроме удобного места.' },
@@ -97,6 +102,7 @@ const articlesData: Record<string, any> = {
         category: 'Здоровье',
         date: '28 Янв 2024',
         readTime: '8 мин',
+        image: '/sleep-optimization.png',
         imageGradient: 'from-indigo-600 via-purple-700 to-fuchsia-800',
         content: [
             { type: 'paragraph', text: 'Сон — фундамент всех остальных привычек. При хроническом недосыпе сила воли падает на 50%, когнитивные способности снижаются на уровень лёгкого опьянения, а риск заболеваний возрастает.' },
@@ -149,15 +155,13 @@ export default function ArticlePage() {
 
             <main className="relative z-10 pt-24 pb-20">
                 {/* Hero Image */}
-                <div className={`w-full h-64 md:h-80 bg-gradient-to-br ${article.imageGradient} relative`}>
-                    {/* Abstract 3D overlay */}
-                    <div className="absolute inset-0 overflow-hidden">
-                        <div className="absolute top-12 right-16 w-32 h-32 rounded-full bg-white/10 blur-lg"></div>
-                        <div className="absolute bottom-8 left-20 w-20 h-20 rounded-lg bg-black/20 rotate-45 blur-sm"></div>
-                        <div className="absolute top-20 left-40 w-10 h-10 rounded-full bg-white/15"></div>
-                        <div className="absolute bottom-16 right-40 w-16 h-16 rounded-full bg-white/5 border border-white/10"></div>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#030014] via-transparent to-transparent"></div>
+                <div className="w-full h-64 md:h-80 relative overflow-hidden">
+                    <img
+                        src={article.image}
+                        alt={article.title}
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#030014] via-[#030014]/40 to-transparent"></div>
                 </div>
 
                 {/* Article Content */}

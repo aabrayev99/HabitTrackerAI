@@ -9,6 +9,7 @@ const articles = [
         title: 'Как выработать привычку за 21 день: полный гайд',
         category: 'Дисциплина',
         date: '12 Фев 2024',
+        image: '/blog/habit-21-days.png',
         imageGradient: 'from-purple-600 via-violet-600 to-indigo-700',
         excerpt: 'Миф о 21 дне: откуда он взялся и что говорит наука? Пошаговая методика формирования устойчивых привычек с конкретными примерами.',
     },
@@ -17,6 +18,7 @@ const articles = [
         title: 'Секреты утренней рутины успешных людей',
         category: 'Лайфстайл',
         date: '10 Фев 2024',
+        image: '/blog/morning-routine.png',
         imageGradient: 'from-pink-500 via-rose-500 to-orange-500',
         excerpt: 'Что делают Тим Кук, Опра и Илон Маск в первые 2 часа после пробуждения? Разбираем науку за утренними ритуалами.',
     },
@@ -25,6 +27,7 @@ const articles = [
         title: 'Дофаминовое голодание: стоит ли пробовать?',
         category: 'Здоровье',
         date: '08 Фев 2024',
+        image: '/blog/dopamine-fasting.png',
         imageGradient: 'from-emerald-500 via-green-600 to-teal-700',
         excerpt: 'Тренд из Кремниевой долины или научно обоснованная практика? Разбираемся в механизмах дофаминовой системы.',
     },
@@ -33,6 +36,7 @@ const articles = [
         title: 'Системы продуктивности: GTD, ZTD и другие',
         category: 'Продуктивность',
         date: '05 Фев 2024',
+        image: '/blog/productivity-systems.png',
         imageGradient: 'from-blue-500 via-sky-600 to-cyan-700',
         excerpt: 'Сравнение популярных систем управления задачами. Какая подойдёт именно вам?',
     },
@@ -41,6 +45,7 @@ const articles = [
         title: 'Медитация для начинающих: с чего начать',
         category: 'Осознанность',
         date: '02 Фев 2024',
+        image: '/blog/meditation-guide.png',
         imageGradient: 'from-amber-500 via-orange-500 to-red-600',
         excerpt: 'Научные исследования подтверждают: 10 минут медитации в день снижают стресс на 40%. Простой гайд для старта.',
     },
@@ -49,6 +54,7 @@ const articles = [
         title: 'Оптимизация сна: хакнуть свой циркадный ритм',
         category: 'Здоровье',
         date: '28 Янв 2024',
+        image: '/sleep-optimization.png',
         imageGradient: 'from-indigo-600 via-purple-700 to-fuchsia-800',
         excerpt: 'Температура, свет, хронотип — все факторы, влияющие на качество сна, и как их контролировать.',
     },
@@ -89,13 +95,15 @@ export default function BlogArchivePage() {
                             href={`/blog/${article.slug}`}
                             className="card-pop rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/5 group block"
                         >
-                            <div className={`h-52 w-full bg-gradient-to-br ${article.imageGradient} relative`}>
-                                {/* Abstract 3D shapes overlay */}
-                                <div className="absolute inset-0 overflow-hidden">
-                                    <div className="absolute top-6 right-6 w-20 h-20 rounded-full bg-white/10 blur-md"></div>
-                                    <div className="absolute bottom-4 left-8 w-12 h-12 rounded-lg bg-black/20 rotate-45 blur-sm"></div>
-                                    <div className="absolute top-12 left-12 w-6 h-6 rounded-full bg-white/20"></div>
-                                </div>
+                            <div className="h-52 w-full relative overflow-hidden">
+                                <img
+                                    src={article.image}
+                                    alt={article.title}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                                {/* Gradient fade to card bg */}
+                                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0a0a0a] to-transparent"></div>
                                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs text-white border border-white/10 font-medium">
                                     {article.category}
                                 </div>

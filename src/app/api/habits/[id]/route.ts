@@ -10,6 +10,7 @@ const updateHabitSchema = z.object({
   frequency: z.enum(['daily', 'weekly', 'custom']).optional(),
   tags: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
+  endDate: z.string().optional(),
 })
 
 // GET /api/habits/[id] - получить конкретную привычку
@@ -77,7 +78,12 @@ export async function PUT(
     }
 
     const body = await req.json()
-    const data = updateHabitSchema.parse(body)
+    const parsed = updateHabitSchema.parse(body)
+
+    const updateData: any = { ...parsed }
+    if (parsed.endDate) {
+      updateData.endDate = new Date(parsed.endDate)
+    }
 
     // Проверяем, что привычка принадлежит пользователю
     const existingHabit = await prisma.habit.findFirst({
@@ -98,7 +104,7 @@ export async function PUT(
       where: {
         id: params.id,
       },
-      data,
+      data: updateData,
     })
 
     return NextResponse.json(updatedHabit)

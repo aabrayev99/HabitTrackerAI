@@ -77,6 +77,7 @@ model Habit {
   description String?
   frequency   String   @default("daily") // daily, weekly, custom
   startDate   DateTime @default(now())
+  endDate     DateTime?
   tags        String[] @default([])
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
